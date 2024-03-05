@@ -30,8 +30,7 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      type: String,
     },
   },
   { timestamps: true }

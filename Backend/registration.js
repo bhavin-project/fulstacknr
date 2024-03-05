@@ -21,7 +21,7 @@ router.post("/items", async (req, res) => {
       price,
       stock,
       category,
-      // owner,
+      owner,
     });
     console.log(productimage);
     await datatoSend.save();

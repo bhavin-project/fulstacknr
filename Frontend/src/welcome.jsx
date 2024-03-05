@@ -13,6 +13,11 @@ const WelcomePage = () => {
           CategoryPage
         </Link>
       </p>
+      <p>
+        <Link to="Display" className="link-underline-secondary">
+          Display Data
+        </Link>
+      </p>
     </>
   );
 };

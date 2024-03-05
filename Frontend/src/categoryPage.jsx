@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 
 const CategoryPage = () => {
   const inputref = useRef(null);
@@ -11,6 +12,7 @@ const CategoryPage = () => {
     });
     alert("Item saved successfully");
     console.log("Response:", response.data.data.name);
+    inputref.current.value = "";
   };
   return (
     <div className="card" style={{ width: "35rem" }}>
@@ -39,6 +41,10 @@ const CategoryPage = () => {
               Submit
             </button>
           </div>
+
+          <Link to="/" className="link-underline-secondary">
+            Go To Home
+          </Link>
         </div>
       </div>
     </div>

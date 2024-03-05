@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -9,11 +10,12 @@ const Registration = () => {
     price: "",
     stock: "",
     category: "",
-    // owner: "Mohit",
+    owner: "Mohit",
   });
   const [categorydata, setcategorydata] = useState([]);
 
-  const { name, description, productimage, price, stock, category } = formData;
+  const { name, description, productimage, price, stock, category, owner } =
+    formData;
 
   const onchange = (e) => {
     if (e.target.type === "file") {
@@ -59,11 +61,6 @@ const Registration = () => {
 
       if (response && response.data && response.data.public_id) {
         const imageUrl = response.data.secure_url; // Use secure_url provided by Cloudinary
-        // console.log("Uploaded image URL: ", imageUrl);
-        // console.log("Response: ", response);
-        // console.log("Response.data: ", response.data);
-        // console.log("Response.data.public_id: ", response.data.public_id);
-        // Add imageUrl to formData
         const newData = {
           productimage: imageUrl,
           name,
@@ -71,6 +68,7 @@ const Registration = () => {
           price,
           stock,
           category,
+          owner,
         };
 
         await axios.post("http://localhost:3000/api/items", newData);
@@ -188,8 +186,8 @@ const Registration = () => {
                 name="owner"
                 id="exampleRadios1"
                 value="Mohit"
-                // checked={owner === "Mohit"}
-                // onChange={onchange}
+                checked={owner === "Mohit"}
+                onChange={onchange}
               />
               <label className="form-check-label">Mohit</label>
             </div>
@@ -200,8 +198,8 @@ const Registration = () => {
                 name="owner"
                 id="exampleRadios2"
                 value="Suresh"
-                // checked={owner === "Suresh"}
-                // onChange={onchange}
+                checked={owner === "Suresh"}
+                onChange={onchange}
               />
               <label className="form-check-label">Suresh</label>
             </div>
@@ -220,6 +218,9 @@ const Registration = () => {
               </button>
             </div>
           </form>
+          <Link to="/" className="link-underline-secondary">
+            Go To Home
+          </Link>
         </div>
       </div>
     </>
