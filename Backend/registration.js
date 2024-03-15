@@ -2,6 +2,7 @@ import productModel from "./Models/product.models.js"; // Assuming you named you
 import { catModel } from "./Models/category.models.js";
 import express from "express";
 import { v2 as cloudinary } from "cloudinary";
+import { userModel } from "./Models/user.models.js";
 
 const router = express.Router();
 cloudinary.config({
@@ -9,29 +10,104 @@ cloudinary.config({
   api_key: "211753862327125",
   api_secret: "VVPjbAQrR-NLYJgVvPv0cFQ1So8",
 });
-
-router.post("/items", async (req, res) => {
+router.get("/getPassword", async (req, res) => {
   try {
-    const { name, description, productimage, price, stock, category, owner } =
-      req.body;
-    const datatoSend = new productModel({
-      name,
-      description,
-      productimage,
-      price,
-      stock,
-      category,
-      owner,
-    });
-    console.log(productimage);
-    await datatoSend.save();
+    const user = req.query.user;
+    const password = req.query.password;
+    console.error("user", user);
+    const userData = await userModel.findOne({ user });
+    if (!userData) {
+      return res.json({ success: false, message: "User not found" });
+    }
+    if (password === userData.password) {
+      return res.json({ success: true, message: "password matched " });
+    } else {
+      return res.json({ success: false, message: "Password not matched" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to get password" });
+  }
+});
+
+router.post("/registerUser", async (req, res) => {
+  try {
+    const { user, email, password } = req.body;
+    const userData = new userModel({ user, email, password });
+    await userData.save();
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "User registration failed" });
+  }
+});
+
+//save and update
+router.post("/items", async (req, res) => {
+  let datatoSend = "";
+  try {
+    if (req.body._id) {
+      const {
+        _id,
+        name,
+        description,
+        productimage,
+        price,
+        stock,
+        category,
+        owner,
+      } = req.body;
+      datatoSend = await productModel.findByIdAndUpdate(_id, {
+        name,
+        description,
+        productimage,
+        price,
+        stock,
+        category,
+        owner,
+      });
+
+      if (!datatoSend) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Item not found" });
+      }
+    } else {
+      const { name, description, productimage, price, stock, category, owner } =
+        req.body;
+      datatoSend = new productModel({
+        name,
+        description,
+        productimage,
+        price,
+        stock,
+        category,
+        owner,
+      });
+
+      await datatoSend.save();
+    }
+
     res.json({ success: true, datatoSend });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+//Delete Item
+router.post("/deleteitem", async (req, res) => {
+  try {
+    const { deleteId } = req.body;
+    await productModel.findByIdAndDelete(deleteId);
+    res.json({ success: true, message: "Deleted Successfully!!" });
+  } catch (error) {
+    res.status(500).json({ success: true, message: "Server error" });
+  }
+});
 
+//set category in dropdown
 router.post("/setCategory", async (req, res) => {
   try {
     const { name } = req.body;
@@ -44,6 +120,7 @@ router.post("/setCategory", async (req, res) => {
   }
 });
 
+//get list of category in Dropdown
 router.get("/getCategory", async (req, res) => {
   try {
     const categories = await catModel.find();
@@ -54,6 +131,7 @@ router.get("/getCategory", async (req, res) => {
   }
 });
 
+//get category name from id
 router.post("/getCategoryName", async (req, res) => {
   try {
     const { categoryId } = req.body;
@@ -74,9 +152,10 @@ router.post("/getCategoryName", async (req, res) => {
   }
 });
 
+//get all data from database
 router.get("/getDbData", async (req, res) => {
   try {
-    const dbData = await productModel.find();
+    const dbData = await productModel.find().sort({ createdAt: -1 });
     res.json({ success: true, data: dbData });
   } catch (error) {
     console.log("problem in fetching from server", error);

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Registration = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -27,6 +30,19 @@ const Registration = () => {
     }
   };
   useEffect(() => {
+    if (location.state && location.state.data) {
+      const dataofitem = location.state.data;
+      setFormData({
+        name: dataofitem.name || "",
+        description: dataofitem.description || "",
+        productimage: dataofitem.productimage || "",
+        price: dataofitem.price || "",
+        stock: dataofitem.stock || "",
+        category: dataofitem.category || "",
+        owner: dataofitem.owner || "Mohit",
+      });
+    }
+
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
@@ -38,7 +54,7 @@ const Registration = () => {
       }
     };
     fetchCategory();
-  }, []);
+  }, [location.state]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -60,17 +76,32 @@ const Registration = () => {
       );
 
       if (response && response.data && response.data.public_id) {
-        const imageUrl = response.data.secure_url; // Use secure_url provided by Cloudinary
-        const newData = {
-          productimage: imageUrl,
-          name,
-          description,
-          price,
-          stock,
-          category,
-          owner,
-        };
-
+        let imageUrl = "";
+        let newData = "";
+        if (location.state && location.state.data) {
+          imageUrl = response.data.secure_url; // Use secure_url provided by Cloudinary
+          newData = {
+            productimage: imageUrl,
+            name,
+            description,
+            price,
+            stock,
+            category,
+            owner,
+            _id: location.state.data._id,
+          };
+        } else {
+          imageUrl = response.data.secure_url; // Use secure_url provided by Cloudinary
+          newData = {
+            productimage: imageUrl,
+            name,
+            description,
+            price,
+            stock,
+            category,
+            owner,
+          };
+        }
         await axios.post("http://localhost:3000/api/items", newData);
         alert("Item submitted successfully");
         // Clear form fields after submission if needed
@@ -82,6 +113,7 @@ const Registration = () => {
           stock: "",
           category: "",
         });
+        navigate("/display");
       } else {
         console.error("Error uploading image:", response);
         alert("Error uploading image");
